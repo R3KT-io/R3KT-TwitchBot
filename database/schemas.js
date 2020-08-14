@@ -44,10 +44,8 @@ const Channel = new Schema({
     }
 })
 
-mongoose.model('Event', Event)
-mongoose.model('Channel', Channel)
 
 module.exports = {
-    Event,
-    Channel
+    Event: mongoose.models.Event || mongoose.model('Event', Event),
+    Channel: mongoose.models.Channel || mongoose.model('Channel', Channel),
 }

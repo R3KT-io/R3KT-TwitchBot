@@ -33,11 +33,6 @@ class TwitchMinimal extends RateLimiter {
      */
     constructor() {
         super(config.TWITCH.RATE_LIMIT, config.TWITCH.TIME)
-        if (config.LOG) {
-            console.log(chalk.magenta(`««« Establishing connection to Twitch`))
-            console.log(chalk.magenta(`««« Authenticating with Twitch`))
-            console.time(chalk.magenta(`»»» Authentecated with Twitch`))
-        }
     }
 
     start() {
@@ -51,6 +46,11 @@ class TwitchMinimal extends RateLimiter {
      * @method
      */
     async auth() {
+        if (config.LOG) {
+            console.log(chalk.magenta(`««« Establishing connection to Twitch`))
+            console.time(chalk.magenta(`»»» Authentecated with Twitch`))
+            console.log(chalk.magenta(`««« Authenticating with Twitch`))
+        }
         const clientId = twitchCreds.clientId;
         const clientSecret = twitchCreds.clientSecret;
         const tokenData = JSON.parse(await fs.readFileSync('./secure/twitch/twitch-tokens.json', 'UTF-8'));
