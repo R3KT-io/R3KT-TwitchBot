@@ -12,8 +12,9 @@ const usernameUtil = require('../../utils/usernames')
 async function bansync(channel, message, chatClient) {
     const splitMessage = message.split(" ")
     if (splitMessage[1]) {
-        const toSync = usernameUtil.strip(usernameUtil.strip(splitMessage[1]))
+        const toSync = usernameUtil.strip(splitMessage[1])
         const bans = await global.r3kt.twitchDBConn.getBans(toSync)
+        console.log(`${channel} syncing ${offenders.length} ban(s) with @${toSync}`)
         let offenders = []
         bans.forEach(ban => offenders.push(ban.offender))
         offenders = [...new Set(offenders)]
