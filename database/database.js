@@ -14,6 +14,8 @@ class Database {
     connected = false
     Event = null
     Channel = null
+    User = null
+    Preference = null
 
     /**
      * Represents a new database handler
@@ -42,6 +44,8 @@ class Database {
         // Register Models
         this.Event = mongoose.model('Event')
         this.Channel = mongoose.model('Channel')
+        this.User = mongoose.model('User')
+        this.Preference = mongoose.model('Preference')
         // Startup complete
         if (config.LOG)
             console.timeEnd(chalk.green(config.BOTS.TWITCH.PREFIX + " »»» Connected to MongoDB"))
@@ -218,6 +222,25 @@ class Database {
         return ban != null
     }
 
+
+    async isBannedInXStreams(user, streams, amount) {
+        let userBans = await this.Event.where({ offender: user, type: 'BAN' })
+        let userUnbans = await this.Event.where({ offender: user, type: 'UNBAN' })
+        userBans.filter(ban => streams.includes(ban.channel))
+        userUnbans.filter(unban => streams.includes(unban.channel))
+        userBans = userBans.filter((thing, index, self) =>
+            index === self.findIndex((t) => (
+                t.channel === thing.channel && t.channel === thing.channel
+            ))
+        )
+        userUnbans = userUnbans.filter((thing, index, self) =>
+            index === self.findIndex((t) => (
+                t.channel === thing.channel && t.channel === thing.channel
+            ))  
+        )
+        return amount <= userBans.length - userUnbans.length
+    }
+
     /**
      * Get a list of staticstics both globally, and on the specified channel
      * @param {String} channel channel to get statistics on
@@ -298,6 +321,32 @@ class Database {
         if (existingChannel != null)
             return existingChannel.followers
         return []
+    }
+
+    async getAutoSyncFollowing(channel) {
+        const following = await this.Channel.find({
+            followers: channel
+        })
+        return following.map(f => f.name)
+    }
+
+    async getPreferences(userid) {
+        const prefernces = await this.Preference.findOne({
+            'user': userid
+        })
+        return prefernces
+    }
+
+    async getUser(channel) {
+        const user = await this.User.findOne({
+            'linkedAccounts.twitch.display_name': {
+                $regex : new RegExp(
+                    usernameUtil.strip(channel),
+                    "i"
+                ) 
+            }
+        })
+        return user
     }
 }
 

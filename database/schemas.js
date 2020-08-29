@@ -44,8 +44,33 @@ const Channel = new Schema({
     }
 })
 
+/**
+ * Represents a user containing information on linked channels
+ */
+const User = new Schema({
+    time: Date,
+    username: String,
+    linkedAccounts: {
+        twitch: {
+            display_name: String
+        }
+    },
+    team: String
+})
+
+/**
+ * Represents a users preferences
+ */
+const Preference = new Schema({
+    time: Date,
+    user: String,
+    banThreshold: Number,
+    twitch: Object
+})
 
 module.exports = {
     Event: mongoose.models.Event || mongoose.model('Event', Event),
     Channel: mongoose.models.Channel || mongoose.model('Channel', Channel),
+    User: mongoose.models.User || mongoose.model('User', User),
+    Preference: mongoose.models.Preference || mongoose.model('Preference', Preference),
 }

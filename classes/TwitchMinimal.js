@@ -8,6 +8,7 @@ const twitchCreds = require('../../../secure/twitch/twitch-creds')
 const {
     checkAutoSync
 } = require('../jobs')
+const usernameUtil = require('../../utils/usernames')
 
 const { RefreshableAuthProvider, StaticAuthProvider } = require('twitch').default
 const { ChatClient } = require('twitch-chat-client')
@@ -132,7 +133,7 @@ class TwitchMinimal extends RateLimiter {
                 'BAN',
                 'Generic Twitch ban.'
             )
-            checkAutoSync(channel, user, this.chatClient)
+            checkAutoSync(usernameUtil.strip(channel), user, this.chatClient)
             customBanMessage(channel, user, this.chatClient)
         })
 

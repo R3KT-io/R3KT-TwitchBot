@@ -6,5 +6,6 @@ module.exports = {
     unsync: require('./unsync'),
     join: require('./join'),
     leave: require('./leave'),
-    lockdown: require('./lockdown')
+    lockdown: require('./lockdown'),
+    unban: require('./unban')
 }

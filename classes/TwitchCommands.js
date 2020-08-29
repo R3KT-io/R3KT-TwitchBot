@@ -3,7 +3,7 @@ const TwitchMinimal = require('./TwitchMinimal')
 const {
     autosync, unsync,
     bansync, stats, join, leave,
-    infractions, lockdown
+    infractions, lockdown, unban
 } = require('../commands')
 
 const {
@@ -73,6 +73,7 @@ class TwitchCommands extends TwitchMinimal {
             if (message.startsWith("!stats")) stats(channel, this.chatClient)
             if (message.startsWith("!infractions")) infractions(channel, message, this.chatClient)
             if (message.startsWith("!lockdown")) lockdown(channel, message, this.chatClient)
+            if (message.startsWith("!unban")) unban(channel, message, this.chatClient)
             if (message.startsWith("!r3kt leave")) leave(channel, user, this.chatClient)
         } else {
             // TODO: Check if I have mod permissions, if so update the DB and run the command again

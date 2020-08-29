@@ -10,10 +10,34 @@ const { config, language } = require('../../../resources')
  */
 async function checkAutoSync(channel, user, chatClient, unban = false) {
     const subscribers = await global.r3kt.twitchDBConn.getAutoSyncFollowers(channel)
+    
     subscribers.forEach(async c => {
-        if (unban) {
+        const r3ktUser = await global.r3kt.twitchDBConn.getUser(c)
+        // Check for global preferences
+        if (r3ktUser && !unban) {
+            const preferences = await global.r3kt.twitchDBConn.getPreferences(r3ktUser._id)
+            if (preferences) {
+                const following = await global.r3kt.twitchDBConn.getAutoSyncFollowing(c)
+                const shouldBan = await global.r3kt.twitchDBConn.isBannedInXStreams(
+                    user, 
+                    following, 
+                    preferences.banThreshold
+                )
+                if (shouldBan) chatClient.rateLimitedRequest(async () => {
+                    const isBanned = await global.r3kt.twitchDBConn.isBanned(user, c)
+                    if (!isBanned)
+                        chatClient.ban(c, user, `${config.USERNAME} ${language.BANSYNC} ${channel.replace('#', '@')}`)
+                            .catch(_ => {
+                                if (config.LOG)
+                                    console.log(chalk.gray(`${user} already banned from ${c}`))
+                            })
+                })
+            }
+        }
+        else if (unban) {
             chatClient.rateLimitedRequest(() => {
                 chatClient.say(c, `/unban ${user}`)
+                console.log(chalk.gray(`UNBAN: ${user} on #${c}`))
             })
         } else {
             chatClient.rateLimitedRequest(async () => {
