@@ -16,7 +16,7 @@ async function checkAutoSync(channel, user, chatClient, unban = false) {
         // Check for global preferences
         if (r3ktUser && !unban) {
             const preferences = await global.r3kt.twitchDBConn.getPreferences(r3ktUser._id)
-            if (preferences) {
+            if (preferences && preferences.twitch.sync) {
                 const following = await global.r3kt.twitchDBConn.getAutoSyncFollowing(c)
                 const shouldBan = await global.r3kt.twitchDBConn.isBannedInXStreams(
                     user, 
