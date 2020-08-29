@@ -21,7 +21,7 @@ async function checkAutoSync(channel, user, chatClient, unban = false) {
                 const shouldBan = await global.r3kt.twitchDBConn.isBannedInXStreams(
                     user, 
                     following, 
-                    preferences.banThreshold
+                    preferences.twitch.banThreshold || preferences.banThreshold
                 )
                 if (shouldBan) chatClient.rateLimitedRequest(async () => {
                     const isBanned = await global.r3kt.twitchDBConn.isBanned(user, c)
