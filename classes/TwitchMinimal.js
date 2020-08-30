@@ -6,7 +6,8 @@ const { config } = require('../../../resources')
 const twitchCreds = require('../../../secure/twitch/twitch-creds')
 
 const {
-    checkAutoSync
+    checkAutoSync,
+    checkTeamSync
 } = require('../jobs')
 const usernameUtil = require('../../utils/usernames')
 
@@ -134,6 +135,7 @@ class TwitchMinimal extends RateLimiter {
                 'Generic Twitch ban.'
             )
             checkAutoSync(usernameUtil.strip(channel), user, this.chatClient)
+            checkTeamSync(usernameUtil.strip(channel), user, this.chatClient)
             customBanMessage(channel, user, this.chatClient)
         })
 

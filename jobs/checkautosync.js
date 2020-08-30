@@ -10,13 +10,13 @@ const { config, language } = require('../../../resources')
  */
 async function checkAutoSync(channel, user, chatClient, unban = false) {
     const subscribers = await global.r3kt.twitchDBConn.getAutoSyncFollowers(channel)
-    
     subscribers.forEach(async c => {
         const r3ktUser = await global.r3kt.twitchDBConn.getUser(c)
-        // Check for global preferences
-        if (r3ktUser && !unban) {
-            const preferences = await global.r3kt.twitchDBConn.getPreferences(r3ktUser._id)
-            if (preferences && preferences.twitch.sync) {
+        let preferences = false
+        if (r3ktUser) preferences = await global.r3kt.twitchDBConn.getPreferences(r3ktUser._id)
+        // Check for custom preferences
+        if (r3ktUser && preferences && !unban) {
+            if (preferences.twitch.sync) {
                 const following = await global.r3kt.twitchDBConn.getAutoSyncFollowing(c)
                 const shouldBan = await global.r3kt.twitchDBConn.isBannedInXStreams(
                     user, 

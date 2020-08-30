@@ -7,6 +7,13 @@ const usernameUtil = require('../../utils/usernames')
 
 const language = require('../../../resources/language');
 
+const asyncForEach = async (array, callback) => {
+    for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array)
+    }
+}
+
+
 // Load and register schemas
 require('./schemas')
 
@@ -46,6 +53,7 @@ class Database {
         this.Channel = mongoose.model('Channel')
         this.User = mongoose.model('User')
         this.Preference = mongoose.model('Preference')
+        this.Team = mongoose.model('Team')
         // Startup complete
         if (config.LOG)
             console.timeEnd(chalk.green(config.BOTS.TWITCH.PREFIX + " »»» Connected to MongoDB"))
@@ -241,6 +249,21 @@ class Database {
         return amount <= userBans.length - userUnbans.length
     }
 
+    async getTeamMembers(teamId) {
+        const team = await this.Team.where({ _id: teamId })
+        return team[0].linkedUsers
+    }
+
+    async getTeamChannelNames(teamId) {
+        const team = await this.Team.where({ _id: teamId })
+        const members = []
+        await asyncForEach(team[0].linkedUsers, async user => {
+            const userObj = await this.getUserById(user)
+            members.push(userObj.linkedAccounts.twitch.display_name)
+        })
+        return members
+    }
+
     /**
      * Get a list of staticstics both globally, and on the specified channel
      * @param {String} channel channel to get statistics on
@@ -346,6 +369,11 @@ class Database {
                 ) 
             }
         })
+        return user
+    }
+
+    async getUserById(id) {
+        const user = await this.User.findOne({ _id: id })
         return user
     }
 }

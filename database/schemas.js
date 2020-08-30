@@ -55,7 +55,8 @@ const User = new Schema({
             display_name: String
         }
     },
-    team: String
+    team: String,
+    teams: Array
 })
 
 /**
@@ -65,12 +66,23 @@ const Preference = new Schema({
     time: Date,
     user: String,
     banThreshold: Number,
-    twitch: Object
+    twitch: Object,
+    teams: Object
 })
+
+/**
+ * Represents a team
+ */
+const Team = new Schema({
+    linkedUsers: Array,
+    name: Number
+})
+
 
 module.exports = {
     Event: mongoose.models.Event || mongoose.model('Event', Event),
     Channel: mongoose.models.Channel || mongoose.model('Channel', Channel),
     User: mongoose.models.User || mongoose.model('User', User),
     Preference: mongoose.models.Preference || mongoose.model('Preference', Preference),
+    Team: mongoose.models.Team || mongoose.model('Team', Team)
 }
