@@ -23,10 +23,13 @@ class TwitchMinimal extends RateLimiter {
     // Publics
     channels = []
     requestQueue = []
+    recentBans = []
+
     // Privates
     #socket = null
     #auth = null
     #chatClient = null
+    fiveMins = 300000
 
     /**
      * Represents a Twitch Chatbot.
@@ -40,6 +43,15 @@ class TwitchMinimal extends RateLimiter {
     start() {
         this.auth()
             .then(() => this.bind())
+    }
+
+    recentBanQueueCleaner() {
+        this.recentBans.forEach((element, index, object) => {
+          if (Date.now() - element.at >= this.fiveMins) {
+              object.splice(index, 1)
+          }
+        })
+        setTimeout(() => this.recentBanQueueCleaner(), 1000)
     }
 
     /**
@@ -94,6 +106,8 @@ class TwitchMinimal extends RateLimiter {
         await this.chatClient.connect().catch(e => {
             console.log(chalk.red(`Failed to connect to Twitch: ${e}`))
         })
+
+        this.recentBanQueueCleaner()
     }
 
     /**
@@ -124,6 +138,27 @@ class TwitchMinimal extends RateLimiter {
         if (config.LOG)
             console.timeEnd(chalk.magenta(`»»» Connected to Twitch`))
 
+        this.chatClient.onPrivmsg((channel, user, message, payload) => {
+            if (this.recentBans.filter(e => {
+                return e.user === user &&
+                e.channel === usernameUtil.strip(channel)
+            }).length > 0) {
+                // Do unban stuffs
+                this.chatClient.rateLimitedRequest(async () => {
+                    this.chatClient.say(
+                        channel, 
+                        `Looks like @${user} was mistakenly banned, we're gonna go ahead and sync that up.`
+                    )
+                })
+                this.recentBans = this.recentBans.filter(e => {
+                    return e.user !== user && 
+                    e.channel !== usernameUtil.strip(channel)
+                })
+                // Remove user from list of recently banned users.
+                checkAutoSync(usernameUtil.strip(channel), user, this.chatClient, true)
+                checkTeamSync(usernameUtil.strip(channel), user, this.chatClient, true)
+            }
+        })
 
         // When a user is banned, record the incident in the DB
         this.chatClient.onBan((channel, user) => {
@@ -137,6 +172,15 @@ class TwitchMinimal extends RateLimiter {
             checkAutoSync(usernameUtil.strip(channel), user, this.chatClient)
             checkTeamSync(usernameUtil.strip(channel), user, this.chatClient)
             customBanMessage(channel, user, this.chatClient)
+
+            // Add user to recently banned list, if we see them chatting
+            // in the stream after the ban, we can assumed they were banned
+            // by mistake and unban them
+            this.recentBans.push({
+                at: Date.now(),
+                channel: usernameUtil.strip(channel),
+                user: user
+            })
         })
 
         // When a user is timed out, record the incident in the DB

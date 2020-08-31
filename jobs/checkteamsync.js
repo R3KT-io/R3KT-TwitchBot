@@ -41,6 +41,11 @@ async function checkTeamSync(channel, user, chatClient, unban = false) {
                                 })
                             }
                         }
+                    } else if (unban) {
+                        chatClient.rateLimitedRequest(() => {
+                            chatClient.say(c, `/unban ${user}`)
+                            console.log(chalk.gray(`UNBAN: ${user} on #${c}`))
+                        })
                     }
                 })
             })
