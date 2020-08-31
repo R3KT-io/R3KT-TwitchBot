@@ -46,6 +46,13 @@ async function checkTeamSync(channel, user, chatClient, unban = false) {
                             chatClient.say(c, `/unban ${user}`)
                             console.log(chalk.gray(`UNBAN: ${user} on #${c}`))
                         })
+                        global.r3kt.twitchDBConn.newEvent(
+                            c,
+                            'System',
+                            user,
+                            'UNBAN',
+                            'Generic Twitch unban.'
+                        )
                     }
                 })
             })
